@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 import paho.mqtt.publish as publish
+import os
 
 employee_ID = "000"
 order_qty = 1
@@ -26,6 +27,8 @@ def get_send_input():
         elif my_input.startswith("MC:"):
             machine = my_input[3:]
             input3 = 1
+        elif my_input == "off":
+            os.system("sudo shutdown -h now")
         else:
             employee_ID = my_input
             input4 = 1
