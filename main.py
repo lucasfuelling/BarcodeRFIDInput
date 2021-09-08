@@ -45,4 +45,5 @@ def get_send_input():
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     while True:
+        print("starting program")
         get_send_input()
