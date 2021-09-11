@@ -7,7 +7,7 @@ import RPi.GPIO as GPIO
 employee_ID = "000"
 order_qty = 1
 order_ID = "0001"
-mqttbroker="192.168.1.98"
+mqttbroker="10.116.1.100"
 
 def get_send_input():
     #get all inputs for metadata
