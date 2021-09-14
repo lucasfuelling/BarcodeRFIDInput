@@ -3,11 +3,16 @@ import json
 import paho.mqtt.publish as publish
 import os
 import RPi.GPIO as GPIO
+import time
+
 token = "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"
 employee_ID = "000"
 order_qty = 1
 order_ID = "0001"
 mqttbroker="10.116.1.100"
+greenled = 23
+redled = 4
+yellowled = 27
 
 def get_send_input():
     #get all inputs for metadata
@@ -19,15 +24,15 @@ def get_send_input():
     GPIO.output(4, GPIO.HIGH)
     while input1 + input2 + input3 + input4 < 4:
         my_input = input()
-        GPIO.output(27, GPIO.HIGH)
+        GPIO.output(yellowled, GPIO.HIGH)
         if my_input.startswith("Q"):
-            order_qty = int(my_input[2:])
+            order_qty = int(my_input[1:])
             input1 = 1
         elif my_input.startswith("ID"):
-            order_ID = my_input[3:]
+            order_ID = my_input[2:]
             input2 = 1
         elif my_input.startswith("M"):
-            machine = my_input[2:]
+            machine = my_input[1:]
             input3 = 1
         elif my_input == "off":
             GPIO.cleanup()
@@ -38,32 +43,30 @@ def get_send_input():
     mydict = {
         "employee_id":employee_ID,
         "order_qty": order_qty,
-        "order_id": order_ID
+        "order_id": order_ID,
+        "machine": machine
     }
 
     print(json.dumps(mydict))
     output_msg = json.dumps(mydict)
-    try:
-        publish.single(machine + "/setup", output_msg, hostname=mqttbroker)
-    except:
-        print("not published")
-    GPIO.output(22, GPIO.HIGH)
-    GPIO.output(27, GPIO.LOW)
-    GPIO.output(4, GPIO.LOW)
-    sleep(2)
+    publish.single(machine + "/setup", output_msg, hostname=mqttbroker)
+    GPIO.output(greenled, GPIO.HIGH)
+    GPIO.output(yellowled, GPIO.LOW)
+    GPIO.output(redled, GPIO.LOW)
+    time.sleep(2)
+    GPIO.output(greenled, GPIO.LOW)
+    GPIO.output(yellowled, GPIO.LOW)
+    GPIO.output(redled, GPIO.LOW)
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(4, GPIO.OUT, initial=GPIO.LOW)
-    GPIO.setup(27, GPIO.OUT, initial=GPIO.LOW)
-    GPIO.setup(22, GPIO.OUT, initial=GPIO.LOW)
-    try:
-        print("starting program")
+    GPIO.setup(redled, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(yellowled, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(greenled, GPIO.OUT, initial=GPIO.LOW)
+    print("starting program")
+    while True:
         get_send_input()
-    except:
-        print("error")
-    finally:
-        GPIO.cleanup()
+    GPIO.cleanup()
