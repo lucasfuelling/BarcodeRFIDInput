@@ -3,7 +3,7 @@ import json
 import paho.mqtt.publish as publish
 import os
 import RPi.GPIO as GPIO
-
+token = "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"
 employee_ID = "000"
 order_qty = 1
 order_ID = "0001"
@@ -20,14 +20,14 @@ def get_send_input():
     while input1 + input2 + input3 + input4 < 4:
         my_input = input()
         GPIO.output(27, GPIO.HIGH)
-        if my_input.startswith("Qty:"):
-            order_qty = int(my_input[4:])
+        if my_input.startswith("Q"):
+            order_qty = int(my_input[2:])
             input1 = 1
-        elif my_input.startswith("OrderID:"):
-            order_ID = my_input[8:]
+        elif my_input.startswith("ID"):
+            order_ID = my_input[3:]
             input2 = 1
-        elif my_input.startswith("MC:"):
-            machine = my_input[3:]
+        elif my_input.startswith("M"):
+            machine = my_input[2:]
             input3 = 1
         elif my_input == "off":
             GPIO.cleanup()
@@ -36,14 +36,17 @@ def get_send_input():
             employee_ID = my_input
             input4 = 1
     mydict = {
-        "EmployeeID":employee_ID,
-        "OrderQty": order_qty,
-        "OrderID": order_ID
+        "employee_id":employee_ID,
+        "order_qty": order_qty,
+        "order_id": order_ID
     }
 
     print(json.dumps(mydict))
     output_msg = json.dumps(mydict)
-    publish.single(machine + "/input", output_msg, hostname="192.168.1.98")
+    try:
+        publish.single(machine + "/setup", output_msg, hostname=mqttbroker)
+    except:
+        print("not published")
     GPIO.output(22, GPIO.HIGH)
     GPIO.output(27, GPIO.LOW)
     GPIO.output(4, GPIO.LOW)
@@ -58,9 +61,8 @@ if __name__ == '__main__':
     GPIO.setup(27, GPIO.OUT, initial=GPIO.LOW)
     GPIO.setup(22, GPIO.OUT, initial=GPIO.LOW)
     try:
-        while True:
-            print("starting program")
-            get_send_input()
+        print("starting program")
+        get_send_input()
     except:
         print("error")
     finally:
